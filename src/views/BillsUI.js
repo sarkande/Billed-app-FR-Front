@@ -5,6 +5,10 @@ import LoadingPage from "./LoadingPage.js"
 import Actions from './Actions.js'
 
 const row = (bill) => {
+  var billUrl = bill.fileName !== (undefined || null || "null") ? Actions(bill.fileName) : "";
+  console.log("billUrl", billUrl)
+  console.log("type of billUrl", typeof billUrl)
+  
   return (`
     <tr>
       <td>${bill.type}</td>
@@ -12,15 +16,14 @@ const row = (bill) => {
       <td>${bill.date}</td>
       <td>${bill.amount} €</td>
       <td>${bill.status}</td>
-      <td>
-        ${Actions(bill.fileUrl)}
-      </td>
+      <td>${bill.fileName !== (undefined || null || "null") ? Actions(bill.fileUrl) : ""}</td>
+      <td>${bill.fileName!== (undefined || null || "null") ? bill.fileName : "No file"}</td>
     </tr>
     `)
   }
 
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+  return (data && data.length) ? data.sort((a, b) => Date.parse(a.date)<Date.parse(b.date) ? 1 : -1).map(bill => row(bill)).join("") : ""
 }
 
 export default ({ data: bills, loading, error }) => {
@@ -66,6 +69,7 @@ export default ({ data: bills, loading, error }) => {
                 <th>Montant</th>
                 <th>Statut</th>
                 <th>Actions</th>
+                <th>Nom du fichier</th>
               </tr>
           </thead>
           <tbody data-testid="tbody">

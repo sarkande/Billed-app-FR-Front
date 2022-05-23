@@ -78,25 +78,65 @@ export default class {
     new Logout({ localStorage, onNavigate })
   }
 
-  handleClickIconEye = () => {
-    const billUrl = $('#icon-eye-d').attr("data-bill-url")
-    const imgWidth = Math.floor($('#modaleFileAdmin1').width() * 0.8)
-    $('#modaleFileAdmin1').find(".modal-body").html(`<div style='text-align: center;'><img width=${imgWidth} src=${billUrl} alt="Bill"/></div>`)
-    if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
-  }
 
+  handleShowTickets(e, bills, index) {
+    console.info(bills)
+    console.info(index);
+    //bills = liste de tout les bills
+    //index = je suppose que c'est la categorie || le numero de la flèche en gros #arrow-icon
+
+    if (this.counter === undefined || this.index !== index) this.counter = 0 //sert à definir si on ouvre ou ferme la categorie
+    if (this.index === undefined || this.index !== index) this.index = index // index sur la categorie actuelle
+
+
+    if (this.counter % 2 === 0) { //si on ouvre la categorie
+      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'}) // on tourne la flèche
+      $(`#status-bills-container${this.index}`) // on affiche les tickets
+        .html(cards(filteredBills(bills, getStatus(this.index)))) //a se renseigner plus tard eventuellement
+
+      this.counter ++ // on incremente le compteur pour savoir si on ouvre ou ferme la categorie
+    } 
+    else //si on ferme la categorie
+    { 
+      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'}) //on ferme la categorie
+      $(`#status-bills-container${this.index}`) //on vide la categorie basé sur l'iundex
+        .html("")
+      this.counter ++ // on incremente le compteur pour savoir si on ouvre ou ferme la categorie
+    }
+
+
+    bills.forEach(bill => {
+      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+    })
+
+    return bills
+
+  }
   handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-    if (this.counter % 2 === 0) {
-      bills.forEach(b => {
+    e.stopImmediatePropagation();
+    console.log("handleEditTicket")
+    console.log("ancien id", this.id);
+    console.log("ancien compteur", this.counter_bill);
+
+    if (this.counter_bill === undefined || this.id !== bill.id) this.counter_bill = 0 //initialise un compteur pour detecter le nombre de clic sur un ticket
+    console.log("nouveau compteur", this.counter_bill);
+
+    if (this.id === undefined || this.id !== bill.id) this.id = bill.id //Initialise un id s'il n'existe pas ou si l'id actuelle est differente de l'id du ticket
+    console.log("Nouvel id",this.id);
+
+
+    if (this.counter_bill % 2 === 0) {
+      bills.forEach(b => {//Applique un css a tout les tickets
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
       })
+      //le billet cliqué aura un background noir
       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
-      $('.dashboard-right-container div').html(DashboardFormUI(bill))
-      $('.vertical-navbar').css({ height: '150vh' })
 
-    } else {
+      //on remplit la div avec le contenu du ticket clické
+      $('.dashboard-right-container div').html(DashboardFormUI(bill))
+      //css pour le ticket cliqué
+      $('.vertical-navbar').css({ height: '150vh' })
+    } else { //si on ferme le ticket on reset le css et on affiche une icone
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
 
       $('.dashboard-right-container div').html(`
@@ -104,7 +144,9 @@ export default class {
       `)
       $('.vertical-navbar').css({ height: '120vh' })
     }
-    this.counter ++
+    //counter_bill incremente pour savoir si on ouvre ou ferme le ticket
+    this.counter_bill ++
+    console.log("--------------------")
 
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
@@ -131,27 +173,11 @@ export default class {
     this.onNavigate(ROUTES_PATH['Dashboard'])
   }
 
-  handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
-    } else {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html("")
-      this.counter ++
-    }
-
-    bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
-    })
-
-    return bills
-
+  handleClickIconEye = () => {
+    const billUrl = $('#icon-eye-d').attr("data-bill-url")
+    const imgWidth = Math.floor($('#modaleFileAdmin1').width() * 0.8)
+    $('#modaleFileAdmin1').find(".modal-body").html(`<div style='text-align: center;'><img width=${imgWidth} src=${billUrl} alt="Bill"/></div>`)
+    if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
   }
 
   getBillsAllUsers = () => {

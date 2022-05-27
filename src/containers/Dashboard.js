@@ -80,8 +80,6 @@ export default class {
 
 
   handleShowTickets(e, bills, index) {
-    console.info(bills)
-    console.info(index);
     //bills = liste de tout les bills
     //index = je suppose que c'est la categorie || le numero de la flèche en gros #arrow-icon
 
@@ -114,15 +112,10 @@ export default class {
   }
   handleEditTicket(e, bill, bills) {
     e.stopImmediatePropagation();
-    console.log("handleEditTicket")
-    console.log("ancien id", this.id);
-    console.log("ancien compteur", this.counter_bill);
 
     if (this.counter_bill === undefined || this.id !== bill.id) this.counter_bill = 0 //initialise un compteur pour detecter le nombre de clic sur un ticket
-    console.log("nouveau compteur", this.counter_bill);
 
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id //Initialise un id s'il n'existe pas ou si l'id actuelle est differente de l'id du ticket
-    console.log("Nouvel id",this.id);
 
 
     if (this.counter_bill % 2 === 0) {
@@ -146,7 +139,6 @@ export default class {
     }
     //counter_bill incremente pour savoir si on ouvre ou ferme le ticket
     this.counter_bill ++
-    console.log("--------------------")
 
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))

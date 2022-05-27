@@ -6,8 +6,6 @@ import Actions from './Actions.js'
 
 const row = (bill) => {
   var billUrl = bill.fileName !== (undefined || null || "null") ? Actions(bill.fileName) : "";
-  console.log("billUrl", billUrl)
-  console.log("type of billUrl", typeof billUrl)
   
   return (`
     <tr>

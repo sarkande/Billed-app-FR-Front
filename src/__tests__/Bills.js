@@ -4,9 +4,12 @@
 
 import {screen, waitFor} from "@testing-library/dom"
 import BillsUI from "../views/BillsUI.js"
+import Bills from "../containers/Bills.js"
 import { bills } from "../fixtures/bills.js"
 import { ROUTES_PATH} from "../constants/routes.js";
 import {localStorageMock} from "../__mocks__/localStorage.js";
+import store from "../__mocks__/store.js";
+import userEvent from '@testing-library/user-event'
 
 import router from "../app/Router.js";
 
@@ -26,7 +29,7 @@ describe("Given I am connected as an employee", () => {
       await waitFor(() => screen.getByTestId('icon-window'))
       const windowIcon = screen.getByTestId('icon-window')
       //to-do write expect expression
-
+       expect(windowIcon.classList.contains('active-icon')).toBe(true)
     })
     test("Then bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills })
@@ -36,5 +39,49 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted)
     })
     
+    test("Then click on billIcon should display a modal", async ()=>{
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+
+      document.body.innerHTML = BillsUI({ data: bills })
+      
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      const Store = null;
+      const billInstantiate = new Bills({
+        document,
+        onNavigate,
+        Store,
+        localStorage: window.localStorage,
+      });
+      const modale = document.getElementById('modaleFile')
+      $.fn.modal = jest.fn(() => modale.classList.add("show"));
+      const handleClickIconEye = jest.fn(()=> billInstantiate.handleClickIconEye);
+
+      
+      const iconEye = screen.getAllByTestId('icon-eye')[0]
+      expect(iconEye).toBeTruthy()
+
+      iconEye.addEventListener("click", handleClickIconEye);
+
+
+      userEvent.click(iconEye)
+      expect(handleClickIconEye).toHaveBeenCalled()
+    
+
+      expect(modale.classList).toContain("show");
+
+    })
+
+    test("Then click on new bill button should allow to navigate to the new bill", async()=>{
+      expect(true).toBe(true)
+    })
+
+    test("Then bill should be render", async()=>{
+      expect(true).toBe(true)
+    })
   })
 })

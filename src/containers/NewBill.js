@@ -90,6 +90,8 @@ export default class NewBill {
     const fileExtension = fileName.toString().split('.').pop()
     const validExtensions = ['jpg', 'jpeg', 'png']
 
+    if(fileName.toString().split('.').length <= 1)
+      return false;
     if (validExtensions.indexOf(fileExtension) === -1) {
       return false;
     }
@@ -98,7 +100,6 @@ export default class NewBill {
 
   checkFieldsNotNull = (fields) => {
     for (let i = 0; i < fields.length; i++) {
-      console.info(fields[i][1]);
       if (fields[i][1] === '' || fields[i][1] === null) {
         return false
       }

@@ -54,7 +54,7 @@ describe("Given I am connected as an employee", () => {
       const billInstantiate = new Bills({
         document,
         onNavigate,
-        Store,
+        store,
         localStorage: window.localStorage,
       });
       const modale = document.getElementById('modaleFile')
@@ -76,12 +76,32 @@ describe("Given I am connected as an employee", () => {
 
     })
 
-    test("Then click on new bill button should allow to navigate to the new bill", async()=>{
-      expect(true).toBe(true)
-    })
+    // test("Then click on new bill button should allow to navigate to the new bill", async()=>{
+    //   //todo write test
+    // })
 
     test("Then bill should be render", async()=>{
-      expect(true).toBe(true)
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      const billInstantiate = new Bills({
+        document,
+        onNavigate,
+        store,
+        localStorage: window.localStorage,
+      });
+      
+      const getAllBills = jest.fn(()=> billInstantiate.getBills());
+      var result = await getAllBills();
+
+      expect(getAllBills).toHaveBeenCalled();
+      expect(result.length).toBe(4)
+
     })
   })
 })

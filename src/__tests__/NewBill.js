@@ -146,32 +146,70 @@ describe("Given I am connected as an employee", () => {
     });
 
 
+    it("Then test to post the new bill but the api server return an error 500", async () => {
+      //handlesubmit
+      //Using the methods create of store mock
+      //expect the promise response send a 500 status and an error
 
+      store.bills.mockImplementationOnce(() => {
+        return {
+          create : (bill) =>  {
+            return Promise.reject(new Error("Erreur 500"))
+          }
+        }})
+        const bill = {
+          "billId":"47qAXb6fIm2zOKkLzMaaaro",
+          "email": "employee@test.tld",
+          "pct": 30,
+          "commentary": "test",
+          "fileUrl": "public/a06d24f447b686c84f30f11722e7361b",
+          "fileName": "test.png",
+          "status": "pending"
+        }
+  
+        const response = await store.bills().create({
+          data: bill,
+          headers: {
+            noContentType: true
+          }
+        }).catch((error) => error);
+        
+        document.body.innerHTML = response
+        const message = await screen.getByText(/Erreur 500/)
+        expect(message).toBeTruthy()
+
+    });
 
     it("Then test to post the new bill but can't reach the api server", async () => {
       //handlesubmit
       //Using the methods create of store mock
-      //expect the promise response send a 404 status and an error
-      const bill = {
-        "billId":"47qAXb6fIm2zOKkLzMaaaro",
-        "email": "employee@test.tld",
-        "commentary": "test",
-        "fileUrl": "public/a06d24f447b686c84f30f11722e7361b",
-        "fileName": "test.png",
-        "status": "pending"
-      }
-      store.bills.mockImplementationOnce((bill) => {
+      //expect the promise response send a 500 status and an error
+
+      store.bills.mockImplementationOnce(() => {
         return {
-          create : () =>  {
-            return Promise.reject(new Error("Erreur 500"))
+          create : (bill) =>  {
+            return Promise.reject(new Error("Erreur 404"))
           }
         }})
+        const bill = {
+          "billId":"47qAXb6fIm2zOKkLzMaaaro",
+          "email": "employee@test.tld",
+          "pct": 30,
+          "commentary": "test",
+          "fileUrl": "public/a06d24f447b686c84f30f11722e7361b",
+          "fileName": "test.png",
+          "status": "pending"
+        }
+  
+        const response = await store.bills().create({
+          data: bill,
+          headers: {
+            noContentType: true
+          }
+        }).catch((error) => error);
 
-        const html = BillsUI({ error: "Erreur 500" })
-        document.body.innerHTML = html
-
-        await new Promise(process.nextTick);
-        const message = await screen.getByText(/Erreur 500/)
+        document.body.innerHTML = response
+        const message = await screen.getByText(/Erreur 404/)
         expect(message).toBeTruthy()
 
     });

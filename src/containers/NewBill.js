@@ -25,6 +25,7 @@ export default class NewBill {
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
     formData.append('email', email)
+    console.info(file)
 
     if(this.checkExtension(filePath)){   
       $wrapperFileError.classList.remove("active") 
@@ -44,7 +45,7 @@ export default class NewBill {
     }else{
       //Show error
       $wrapperFileError.classList.add("active")
-      file.value = null
+      //file.value = null
     }
   }
 
@@ -73,7 +74,7 @@ export default class NewBill {
   }
 
   // not need to cover this function by tests
-  updateBill = (bill) => {
+  updateBill(bill) {
     if (this.store) {
       this.store
       .bills()
@@ -86,7 +87,7 @@ export default class NewBill {
   }
 
   //check if the extension of picture is correct
-  checkExtension = (fileName) => {
+  checkExtension(fileName){
     const fileExtension = fileName.toString().split('.').pop()
     const validExtensions = ['jpg', 'jpeg', 'png']
 

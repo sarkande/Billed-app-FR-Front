@@ -2,14 +2,16 @@
  * @jest-environment jsdom
  */
 
-import { screen } from "@testing-library/dom"
-import store from "../__mocks__/store.js"
-import Store from "../app/Store.js"
-import {localStorageMock} from "../__mocks__/localStorage.js";
-import { ROUTES ,ROUTES_PATH} from '../constants/routes.js'
+import { screen, fireEvent } from "@testing-library/dom"
+import userEvent from '@testing-library/user-event'
+
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
-import BillsUI  from '../views/BillsUI.js'
+import { ROUTES ,ROUTES_PATH} from '../constants/routes.js'
+import {localStorageMock} from "../__mocks__/localStorage.js";
+import mockStore from "../__mocks__/store.js"
+
+jest.mock("../app/store", () => mockStore)
 
 
 describe("Given I am connected as an employee", () => {
@@ -35,7 +37,7 @@ describe("Given I am connected as an employee", () => {
       const fileExtensionTestFalse =["file.jpga", "file.pdf", "png"]
 
       const localStorage = window.localStorage;
-      const bills =  new NewBill({ document, onNavigate, store, localStorage })
+      const bills =  new NewBill({ document, onNavigate, mockStore, localStorage })
       const html = NewBillUI()
       document.body.innerHTML = html
       
@@ -50,9 +52,69 @@ describe("Given I am connected as an employee", () => {
       }  
 
     });
+
+    it("Then i test to handle submit", async() => {
+
+      //INIT
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee',
+        email: 'employee@test.tld'
+      }))
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+
+      const html = NewBillUI()
+      document.body.innerHTML = html
+
+      const checkExtension = jest
+          .spyOn(NewBill.prototype, 'checkExtension')
+
+
+      const newBill = new NewBill({document,
+        onNavigate,
+        mockStore,
+        localStorage: window.localStorage});
+
+      //TEST
+
+      const handleChange = jest.fn((e)=>newBill.handleChangeFile(e));
+      
+      const inputFile = screen.getByTestId(`file`);
+      console.info(inputFile)
+      inputFile.addEventListener("change", handleChange);
+      const file = new File(["file"], "file.png", {type: "image/png"});
+
+      fireEvent.change(inputFile,
+        { 
+          target:{ 
+            files:
+              [ file]
+          } 
+        });
+      console.info(inputFile.files[0])
+
+      expect(handleChange).toHaveBeenCalled();
+      expect(checkExtension).toHaveBeenCalled();
+      //checkExtension not correct
+      expect(document.querySelector(".file-error").classList.contains("active")).toBe(false);
+      console.info(newBill)
+
+      // expect(newBill.billId).toBe("file.jpg");
+      // expect(newBill.fileUrl).toBe("file.jpg");
+      // expect(newBill.bilfileNamelId).toBe("file.jpg");
+
+    });
+    
   });
+
+
+
   describe("If I submit the form", () => {
+
     it("Then the field should not be null", () => {
+      //handleSubmit
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee'
@@ -64,7 +126,7 @@ describe("Given I am connected as an employee", () => {
 
 
       const localStorage = window.localStorage;
-      const bills =  new NewBill({ document, onNavigate, store, localStorage })
+      const bills =  new NewBill({ document, onNavigate, mockStore, localStorage })
       const html = NewBillUI()
       document.body.innerHTML = html
       const bill = {
@@ -99,11 +161,10 @@ describe("Given I am connected as an employee", () => {
       expect(bills.checkFieldsNotNull(Object.entries(billFalse))).toBe(false);
     });
 
-  });
-  describe("If I submit the form", () => {
+
     it("Then test to get the bills (update)", async () => {
-      const getSpy = jest.spyOn(store, "bills");
-      const bills = store.bills();
+      const getSpy = jest.spyOn(mockStore, "bills");
+      const bills = mockStore.bills();
       expect(getSpy).toHaveBeenCalledTimes(1);
       expect((await bills.list()).length).toBe(4);
     });
@@ -123,26 +184,25 @@ describe("Given I am connected as an employee", () => {
         "vat": "70",
         "pct": 30,
         "commentary": "test",
-        "fileUrl": "public/a06d24f447b686c84f30f11722e7361b",
+        "fileUrl": "https://localhost:3456/images/test.jpg",
         "fileName": "test.png",
         "status": "pending"
       }
 
-      const response = await store.bills().create({
+      const response = await mockStore.bills().create({
         data: bill,
         headers: {
           noContentType: true
         }
       });
-      expect(response.ok).toBe(200);
+      
 
       // this.billId = key
       // this.fileUrl = fileUrl
       // this.fileName = fileName
 
-      expect(response.message.billId).toBe(bill.billId); //47qAXb6fIm2zOKkLzMaaaro
-      expect(response.message.fileUrl).toBe(bill.fileUrl); //public/a06d24f447b686c84f30f11722e7361b
-      expect(response.message.fileName).toBe(bill.fileName); //test.png
+      expect(response.fileUrl).toBe(bill.fileUrl); //public/a06d24f447b686c84f30f11722e7361b
+
     });
 
 
@@ -151,7 +211,7 @@ describe("Given I am connected as an employee", () => {
       //Using the methods create of store mock
       //expect the promise response send a 500 status and an error
 
-      store.bills.mockImplementationOnce(() => {
+      mockStore.bills.mockImplementationOnce(() => {
         return {
           create : (bill) =>  {
             return Promise.reject(new Error("Erreur 500"))
@@ -167,7 +227,7 @@ describe("Given I am connected as an employee", () => {
           "status": "pending"
         }
   
-        const response = await store.bills().create({
+        const response = await mockStore.bills().create({
           data: bill,
           headers: {
             noContentType: true
@@ -185,7 +245,7 @@ describe("Given I am connected as an employee", () => {
       //Using the methods create of store mock
       //expect the promise response send a 500 status and an error
 
-      store.bills.mockImplementationOnce(() => {
+      mockStore.bills.mockImplementationOnce(() => {
         return {
           create : (bill) =>  {
             return Promise.reject(new Error("Erreur 404"))
@@ -201,7 +261,7 @@ describe("Given I am connected as an employee", () => {
           "status": "pending"
         }
   
-        const response = await store.bills().create({
+        const response = await mockStore.bills().create({
           data: bill,
           headers: {
             noContentType: true
@@ -213,6 +273,35 @@ describe("Given I am connected as an employee", () => {
         expect(message).toBeTruthy()
 
     });
+
+
+
+   
+
+    // const onNavigate = (pathname) => {
+    //   document.body.innerHTML = ROUTES({ pathname });
+    // };
+    // const updateBillMock = jest
+    //   .spyOn(NewBill.prototype, 'updateBill')
+    //   .mockImplementation((bill) => {
+    //     console.log('fonction simulée');
+    //     if (mockStore) {
+    //       mockStore
+    //       .bills()
+    //       .update(bill)
+    //       .then(() => {
+    //         onNavigate(ROUTES_PATH['Bills'])
+    //       })
+    //       .catch(error => console.error(error))
+    //     }
+    //  });
+
+
   });
+
+
+
+
+
 
 })

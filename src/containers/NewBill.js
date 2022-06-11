@@ -25,9 +25,8 @@ export default class NewBill {
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
     formData.append('email', email)
-    console.info(file)
 
-    if(this.checkExtension(filePath)){   
+    if(this.checkExtension(file.name)){   
       $wrapperFileError.classList.remove("active") 
       this.store
         .bills()
@@ -45,7 +44,7 @@ export default class NewBill {
     }else{
       //Show error
       $wrapperFileError.classList.add("active")
-      //file.value = null
+      file.value = null
     }
   }
 

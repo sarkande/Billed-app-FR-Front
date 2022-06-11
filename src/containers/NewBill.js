@@ -98,7 +98,7 @@ export default class NewBill {
     return true;
   }
 
-  checkFieldsNotNull = (fields) => {
+  checkFieldsNotNull (fields) {
     for (let i = 0; i < fields.length; i++) {
       if (fields[i][1] === '' || fields[i][1] === null) {
         return false

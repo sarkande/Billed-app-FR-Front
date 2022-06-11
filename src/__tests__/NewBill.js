@@ -156,6 +156,48 @@ describe("Given I am connected as an employee", () => {
 
   describe("If I submit the form", () => {
 
+    it("Then i test to handle submit", async() => {
+      //INIT
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee',
+
+      }))
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+
+      const html = NewBillUI()
+      document.body.innerHTML = html
+
+      const checkFieldsNotNull = jest
+          .spyOn(NewBill.prototype, 'checkFieldsNotNull')
+      const updateBill = jest
+          .spyOn(NewBill.prototype, 'updateBill');
+      const localStorage = window.localStorage;
+
+
+      const newBill = new NewBill({document,
+        onNavigate,
+        store: mockStore,
+        localStorage});
+
+      newBill.fileUrl = "a";
+      newBill.fileName = "a";
+
+      const form = document.querySelector(`form[data-testid="form-new-bill"]`);
+      const handleSubmit = jest.fn((e)=>newBill.handleSubmit(e));
+      form.addEventListener("submit", handleSubmit);
+      
+      fireEvent.submit(form);
+      // await new Promise(process.nextTick);
+
+      expect(handleSubmit).toHaveBeenCalled();
+      expect(checkFieldsNotNull).toHaveBeenCalled();
+
+    });
+
+
     it("Then the field should not be null", () => {
       //handleSubmit
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })

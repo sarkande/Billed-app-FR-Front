@@ -70,7 +70,8 @@ export default (bill) => {
             <div class='input-field input-flex file-flex'>
             <span id="file-name-admin">${bill.fileName}</span>
             <div class='icons-container'>
-              <span id="icon-eye-d" data-testid="icon-eye-d" data-bill-url="${bill.fileUrl}"> ${eyeWhite} </span>
+            ${bill.fileName!== (undefined || null || "null") ? `<span id="icon-eye-d" data-testid="icon-eye-d" data-bill-url="${bill.fileUrl}"> ${eyeWhite} </span>` : "No file"}
+              
             </div>
           </div>
         </div>
